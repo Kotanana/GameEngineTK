@@ -37,41 +37,45 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     g_game = std::make_unique<Game>();
 
     // Register class and create window
-    {
-        // Register class
-        WNDCLASSEX wcex;
-        wcex.cbSize = sizeof(WNDCLASSEX);
-        wcex.style = CS_HREDRAW | CS_VREDRAW;
-        wcex.lpfnWndProc = WndProc;
-        wcex.cbClsExtra = 0;
-        wcex.cbWndExtra = 0;
-        wcex.hInstance = hInstance;
-        wcex.hIcon = LoadIcon(hInstance, L"IDI_ICON");
-        wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-        wcex.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
-        wcex.lpszMenuName = nullptr;
-        wcex.lpszClassName = L"GameEngineTKWindowClass";
-        wcex.hIconSm = LoadIcon(wcex.hInstance, L"IDI_ICON");
-        if (!RegisterClassEx(&wcex))
-            return 1;
+	{
+		// Register class
+		WNDCLASSEX wcex;
+		wcex.cbSize = sizeof(WNDCLASSEX);
+		wcex.style = CS_HREDRAW | CS_VREDRAW;
+		wcex.lpfnWndProc = WndProc;
+		wcex.cbClsExtra = 0;
+		wcex.cbWndExtra = 0;
+		wcex.hInstance = hInstance;
+		wcex.hIcon = LoadIcon(hInstance, L"IDI_ICON");
+		wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+		wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+		wcex.lpszMenuName = nullptr;
+		wcex.lpszClassName = L"GameEngineTKWindowClass";
+		wcex.hIconSm = LoadIcon(wcex.hInstance, L"IDI_ICON");
+		if (!RegisterClassEx(&wcex))
+			return 1;
 
-        // Create window
-        int w, h;
-        g_game->GetDefaultSize(w, h);
+		// Create window
+		int w, h;
+		g_game->GetDefaultSize(w, h);
 
-        RECT rc;
-        rc.top = 0;
-        rc.left = 0;
-        rc.right = static_cast<LONG>(w); 
-        rc.bottom = static_cast<LONG>(h);
+		RECT rc;
+		rc.top = 0;
+		rc.left = 0;
+		rc.right = static_cast<LONG>(w);
+		rc.bottom = static_cast<LONG>(h);
 
-        AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
-        HWND hwnd = CreateWindowEx(0, L"GameEngineTKWindowClass", L"GameEngineTK", WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
-            nullptr);
-        // TODO: Change to CreateWindowEx(WS_EX_TOPMOST, L"GameEngineTKWindowClass", L"GameEngineTK", WS_POPUP,
-        // to default to fullscreen.
+		HWND hwnd = CreateWindowEx(0, L"GameEngineTKWindowClass", L"GameEngineTK", WS_OVERLAPPEDWINDOW,
+			CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
+			nullptr);
+
+   
+		// A menu is active and the user presses a key that does not correspond
+		// to any mnemonic or accelerator key. Ignore so we don't produce an error beep.
+		return MAKELRESULT(0, MNC_CLOSE);
+	
 
         if (!hwnd)
             return 1;
@@ -246,12 +250,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-    case WM_MENUCHAR:
-        // A menu is active and the user presses a key that does not correspond
-        // to any mnemonic or accelerator key. Ignore so we don't produce an error beep.
-        return MAKELRESULT(0, MNC_CLOSE);
-    }
-
+	case WM_MENUCHAR:
+		// A menu is active and the user presses a key that does not correspond
+		// to any mnemonic or accelerator key. Ignore so we don't produce an error beep.
+		return MAKELRESULT(0, MNC_CLOSE);
+	case WM_INPUT:
+	case WM_MOUSEMOVE:
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONUP:
+	case WM_MOUSEWHEEL:
+	case WM_XBUTTONDOWN:
+	case WM_XBUTTONUP:
+	case WM_MOUSEHOVER:
+		Mouse::ProcessMessage(message, wParam, lParam);
+		break;
+	}
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
