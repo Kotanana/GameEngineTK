@@ -4,7 +4,7 @@
 
 #include "pch.h"
 #include "Game.h"
-
+#include<Model.h>
 
 extern void ExitGame();
 
@@ -73,6 +73,8 @@ void Game::Initialize(HWND window, int width, int height)
 
 	//デバッグカメラ生成、初期化
 	m_debugCamera = std::make_unique<DebugCamera>(m_outputWidth,m_outputHeight);
+	m_factory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
+	m_model = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\cModels\ground.cmo", *m_factory);
 }
 
 // Executes the basic game loop.
@@ -135,6 +137,12 @@ void Game::Render()
 	VertexPositionColor v3(Vector3(-0.5f, -0.5f, 0.5f), Colors::Red);
 	m_batch->DrawTriangle(v1, v2, v3);
 
+	//地面も出る
+	m_model->Draw(m_d3dContext.Get(), states, m_world, m_view, m_proj);
+	m_batch->End();
+	
+	//地面も出る
+	m_model->Draw(m_d3dContext.Get(), states, m_world, m_view, m_proj);
 	m_batch->End();
 
     Present();
